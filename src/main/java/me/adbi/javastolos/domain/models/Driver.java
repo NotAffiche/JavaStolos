@@ -104,13 +104,10 @@ public class Driver {
         setId(id);
         setLastName(lastName);
         setFirstName(firstName);
-        if (!simpleNatRegNumCheck(natRegNumber)) {
-            throw new DomainException("Invalid RRN");
-        }
         setNatRegNumber(natRegNumber);
         setLicenses(licenses);
         setBirthDate(birthDate);
-        if (!isMatchingBirthDateAndRRN(getNatRegNumber())) {
+        if (!isMatchingBirthDateAndRRN(getNatRegNumber(), getBirthDate())) {
             throw new DomainException("BirthDate and RRN do not match!");
         }
         setAddress(address);
@@ -154,8 +151,8 @@ public class Driver {
 
         String yearBeginning = "19";
         if (!valid) {
-            final int magicNum = 2000000000; // gebruikt voor mensen die in/na 2000 zijn geboren
-            res = 97 - ((magicNum + Integer.parseInt(allButControl)) % 97);
+            final long magicNum = 2000000000; // gebruikt voor mensen die in/na 2000 zijn geboren
+            res = (int) (97 - ((magicNum + Integer.parseInt(allButControl)) % 97));
             if (controlNum == res) {
                 valid = true;
                 yearBeginning = "20";
@@ -165,7 +162,9 @@ public class Driver {
         return LocalDate.of(Integer.parseInt(yearBeginning + year), monthNum, dayNum);
     }
 
-    private boolean simpleNatRegNumCheck(String natRegNum) {
+    boolean simpleNatRegNumCheck(String natRegNum) {
+        // Declarations
+        boolean valid = false;
         String[] parts = natRegNum.split("-");
         String fullDate = parts[0];
         String idAndControl = parts[1];
@@ -176,25 +175,25 @@ public class Driver {
         String[] idControlParts = idAndControl.split("\\.");
         String id = idControlParts[0];
         String control = idControlParts[1];
-
         int controlNum = Integer.parseInt(control);
         String allButControl = year + month + day + id;
 
         int res = 97 - (Integer.parseInt(allButControl) % 97);
-        boolean valid = controlNum == res;
-
-        if (!valid) {
-            final int magicNum = 2000000000; // gebruikt voor mensen die in/na 2000 zijn geboren
-            res = 97 - ((magicNum + Integer.parseInt(allButControl)) % 97);
-            valid = controlNum == res;
+        if (controlNum == res) {
+            valid = true;
         }
-
+        if (!valid) {
+            final long magicNum = 2000000000; // gebruikt voor mensen die in/na 2000 zijn geboren
+            res = (int) (97 - ((magicNum + Integer.parseInt(allButControl)) % 97));
+            if (controlNum == res) {
+                valid = true;
+            }
+        }
         return valid;
     }
 
-    private boolean isMatchingBirthDateAndRRN(String natRegNum) throws DomainException {
+    private boolean isMatchingBirthDateAndRRN(String natRegNum, LocalDate doFromBD) throws DomainException {
         LocalDate dtFromRRN = getDateFromRRN(natRegNum);
-        LocalDate doFromBD = LocalDate.of(getBirthDate().getYear(), getBirthDate().getMonthValue(), getBirthDate().getDayOfMonth());
         return dtFromRRN.isEqual(doFromBD);
     }
     //endregion

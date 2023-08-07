@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.SQLException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/drivers")
@@ -23,8 +24,13 @@ public class DriversController {
         this.driversService = driversService;
     }
 
+    @GetMapping
+    public List<Driver> getDrivers() throws SQLException {
+        return driversService.getDrivers();
+    }
+
     @GetMapping("/{id}")
-    public Driver getDriver(@PathVariable Integer id) throws DataException, SQLException, DomainException {
+    public Driver getDriver(@PathVariable Integer id) throws DataException, SQLException {
         return driversService.getDriver(id);
     }
 
